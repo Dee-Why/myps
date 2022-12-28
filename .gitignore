@@ -1,0 +1,6 @@
+
+*.jpg
+*.ipynb
+*.png
+pictures/*
+.idea
