@@ -12,3 +12,15 @@ experimental project: photo style modifier
 * 净白ins风：滤镜净白70，对比度20，饱和度20，锐化35，高光20，色温-15，色调-10
 * 动漫奶油风： 滤镜奶杏，对比度25，饱和度20，锐化30，高光-30，色温30
 * ins发光： ABG缤果70，光感-30，对比度30，饱和度20，高光30，色温-30
+
+PIL可以解决的部分：
+* 对比度-contrast
+* 锐化-sharpness
+* 亮度-brightness
+* 饱和度-color
+
+TODO:
+* 高光
+* 色温
+* 色调
+* 阴影

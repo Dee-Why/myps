@@ -1,11 +1,13 @@
 import cv2 as cv
 import sys
-from utils import read_image, show_image, save_image
+# from utils import read_image, show_image, save_image
+from basic_pil import *
 
-img = cv.imread("pictures/001/zzy_dark.jpg", cv.IMREAD_UNCHANGED)
-if img is None:
-    sys.exit("Could not read the image.")
-cv.imshow("Display window", img)
-k = cv.waitKey(0)
-if k == ord("s"):
-    cv.imwrite("pictures/001/zzy_dark.png", img)
+img = read_image("pictures/001/zzy_dark.jpg")
+
+img = modify_contrast(img, 20)
+img = modify_sharpness(img, 25)
+img = modify_brightness(img, 30)
+
+save_image(img, "pictures/output/c20s25b30.png")
+
