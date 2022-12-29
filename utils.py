@@ -19,6 +19,15 @@ def save_image_cv(img, filename):
     cv.imwrite(filename, img)
 
 
+def read_image(filename):
+    im = Image.open(filename)
+    return im
+
+
+def save_image(image,filename):
+    image.save(filename)
+
+
 def cvarray_to_pilImage(opencv_array):
     color_coverted = cv.cvtColor(opencv_array, cv.COLOR_BGR2RGB)
     im_converted = Image.fromarray(color_coverted, mode="RGB")

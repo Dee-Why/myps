@@ -1,14 +1,4 @@
-from PIL import Image, ImageEnhance
-
-
-def read_image(filename):
-    im = Image.open(filename)
-    return im
-
-
-def save_image(image,filename):
-    image.save(filename)
-
+from PIL import ImageEnhance
 
 def modify_saturation(image, factor):
     # 这里认为用户输入的是 -100 到 100 之间的数
