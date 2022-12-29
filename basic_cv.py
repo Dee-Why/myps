@@ -66,29 +66,8 @@ def ps_shadow_highlight_adjust(path):
     阴影提亮调整
     """
     origin_image = cv.imread(path)
-
     psSH = PSShadowHighlight(origin_image)
-
-    def update_shadows_light(x):
-        psSH.shadows_light = x
-
-    title = "ShadowHighlight"
-    cv.namedWindow(title, cv.WINDOW_NORMAL)
-    cv.resizeWindow(title, 800, 600)
-    cv.moveWindow(title, 0, 0)
-
-    option_title = "Option"
-    cv.namedWindow(option_title, cv.WINDOW_NORMAL)
-    cv.resizeWindow(option_title, 400, 20)
-    cv.moveWindow(option_title, 0, 630)
-    cv.createTrackbar('shadows_light', option_title, psSH.shadows_light, 100, update_shadows_light)
-
-    while True:
-        image = psSH.adjust_image(origin_image)
-        cv.imshow(title, image)
-        if cv.waitKey(1) == ord('q'):
-            break
-    cv.destroyAllWindows()
+    image = psSH.adjust_image(origin_image)
     cv.imwrite('test_output.png', image)
 
 
