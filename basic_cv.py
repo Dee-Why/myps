@@ -3,7 +3,7 @@ import sys
 import cv2 as cv
 import numpy as np
 
-class PSShadowHighlight:
+class PSShadow:
     """
     色阶调整 默认输入图片为opencv风格的np.array
     """
@@ -59,25 +59,9 @@ class PSShadowHighlight:
         return img
 
 
-def ps_shadow_highlight_adjust_and_save_img(psSH, origin_image):
-    psSH.parameter = 50
-    image = psSH.adjust_image(origin_image)
-    cv.imwrite('py_sh_out_01.png', image)
-
-
-def ps_shadow_highlight_adjust(path, outPath):
-    """
-    阴影提亮调整
-    """
-    origin_image = cv.imread(path)
-    psSH = PSShadowHighlight(origin_image)
-    image = psSH.adjust_image(origin_image)
-    cv.imwrite(outPath, image)
-
-
-def modify_shadow(cvimage, factor, shadow_percentile):
-    psSH = PSShadowHighlight(cvimage, factor, shadow_percentile)
-    image = psSH.adjust_image(cvimage)
+def modify_shadow(cvimage, factor, luminance_threshold):
+    psS = PSShadow(cvimage, factor, luminance_threshold)
+    image = psS.adjust_image(cvimage)
     return image
 
 
@@ -137,9 +121,9 @@ class PSHighlight:
         return img
 
 
-def modify_highlight(cvimage, factor, shadow_percentile):
-    psSH = PSHighlight(cvimage, factor, shadow_percentile)
-    image = psSH.adjust_image(cvimage)
+def modify_highlight(cvimage, factor, luminance_threshold):
+    psH = PSHighlight(cvimage, factor, luminance_threshold)
+    image = psH.adjust_image(cvimage)
     return image
 
 
@@ -203,15 +187,15 @@ def modify_color_tone(img, factor):
     return tuned_rgb
 
 
-if __name__ == '__main__':
-    """
-    usage:
-    python basic_cv.py test.jpg
-    """
-    if len(sys.argv) == 1:
-        print("参数错误，没有检测到图片路径")
-        sys.exit(-1)
-    img_path = sys.argv[1]
-    out_path = sys.argv[2]
-    print("img_path Params:", img_path, "out_path:", out_path)
-    ps_shadow_highlight_adjust(img_path, out_path)
+# if __name__ == '__main__':
+#     """
+#     usage:
+#     python basic_cv.py test.jpg
+#     """
+#     if len(sys.argv) == 1:
+#         print("参数错误，没有检测到图片路径")
+#         sys.exit(-1)
+#     img_path = sys.argv[1]
+#     out_path = sys.argv[2]
+#     print("img_path Params:", img_path, "out_path:", out_path)
+#     ps_shadow_highlight_adjust(img_path, out_path)
