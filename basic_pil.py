@@ -1,6 +1,7 @@
 from PIL import Image, ImageEnhance
 import numpy as np
 
+
 def modify_saturation(image, factor):
     # 这里认为用户输入的是 -100 到 100 之间的数
     assert -100 < factor <= 100
@@ -41,3 +42,13 @@ def modify_hue(img, factor):
     hsv[..., 0] = (hsv[..., 0]+factor) % 360
     new_img = Image.fromarray(hsv, 'HSV')
     return new_img.convert('RGB')
+
+
+def modify_exposure(img, factor):
+    hsv_img = img.convert('HSV')
+    hsv = np.array(hsv_img)
+    hsv[..., 2] = hsv[..., 2] * factor / 100
+    hsv[..., 2] = hsv[..., 2].clip(0, 100)
+    new_img = Image.fromarray(hsv, 'HSV')
+    return new_img.convert('RGB')
+
