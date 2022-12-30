@@ -91,39 +91,24 @@ class PSHighlight:
         shade_score = (1 - srcGray) * (1 - srcGray)
 
         self.maskThreshold = np.percentile(shade_score, self.threshold_percentile)
-        # 将明度小于均值的部分视为阴影区，这里mask里1为阴影区，0为明亮区
-        mask = shade_score > self.maskThreshold
-        imgRow = np.size(img, 0)
-        imgCol = np.size(img, 1)
-
-        self.rgbMask = np.zeros([imgRow, imgCol, 3], dtype=bool)
-        self.rgbMask[:, :, 0] = self.rgbMask[:, :, 1] = self.rgbMask[:, :, 2] = mask
-
-        self.rgb_shade_score = np.zeros([imgRow, imgCol, 3], dtype=float)
-        self.rgb_shade_score[:, :, 0] = self.rgb_shade_score[:, :, 1] = self.rgb_shade_score[:, :, 2] = shade_score
-
-        self.midtonesRate = np.zeros([imgRow, imgCol, 3], dtype=float)
-        self.brightnessRate = np.zeros([imgRow, imgCol, 3], dtype=float)
+        # 将暗度小于均值的部分视为明亮区，这里mask里1为明亮区，0为阴影区
+        mask = shade_score < self.maskThreshold
+        self.int_mask = np.zeros(img.shape, dtype=np.uint8)
+        self.int_mask[mask] = 255
 
     def adjust_image(self, img):
-        maxRate = 0.25
-        midTones = 1 + self.parameter / 100.0
-        brightness = (self.parameter / 100.0 - 0.001) * maxRate
+        alpha = self.parameter / 100.0
+        beta = 2 * alpha
+        # alpha，beta 共同決定高光消除後的模糊程度
+        # alpha: 亮度的缩放因子，默認是 0.2， 範圍[0, 2], 值越大，亮度越低
+        # beta:  亮度缩放後加上的参数，默認是 0.4， 範圍[0, 2]，值越大，亮度越低
+        outImg = cv.illuminationChange(img, mask=self.int_mask, alpha=alpha, beta=beta)
 
-        self.midtonesRate[~self.rgbMask] = midTones  # 对于明亮区固定值
-        self.midtonesRate[self.rgbMask] = (midTones - 1.0) * \
-                                          (2 * self.maskThreshold - self.rgb_shade_score[
-                                              self.rgbMask]) / self.maskThreshold + 1.0
+        # outImg = 255 * np.power(img / 255.0, 1.0 / self.midtonesRate) * (1.0 / (1 - self.brightnessRate))
 
-        self.brightnessRate[~self.rgbMask] = brightness
-        self.brightnessRate[self.rgbMask] = (1 * (2 * self.maskThreshold - self.rgb_shade_score[self.rgbMask])
-                                             / self.maskThreshold) * brightness
-
-        outImg = 255 * np.power(img / 255.0, 1.0 / self.midtonesRate) * (1.0 / (1 - self.brightnessRate))
-
-        img = outImg
-        img[img < 0] = 0
-        img[img > 255] = 255
+        img = outImg.clip(0, 255)
+        # img[img < 0] = 0
+        # img[img > 255] = 255
 
         img = img.astype(np.uint8)
         return img

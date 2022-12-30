@@ -21,7 +21,7 @@ img = cvarray_to_pilImage(cvimg)
 # img = modify_brightness(img, factor=-40)
 # 高光调整（factor正数增量，负数降暗）（luminance_threshold越高则将更大的部分划归为阴影，更小的部分划分为高光）
 cvimg = pilImage_to_cvarray(img)
-cvimg = modify_highlight(cvimg, factor=-10, threshold=50)
+cvimg = modify_highlight(cvimg, factor=20, threshold=50)
 img = cvarray_to_pilImage(cvimg)
 # # 调整色温（负蓝正黄）
 # cvimg = pilImage_to_cvarray(img)
@@ -44,5 +44,5 @@ img = cvarray_to_pilImage(cvimg)
 
 
 # 保存处理后的图片
-save_image(img, "pictures/output/shadow_highlight.png")
+save_image(img, "pictures/output/highlight.png")
 
