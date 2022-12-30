@@ -104,12 +104,7 @@ class PSHighlight:
         # beta:  亮度缩放後加上的参数，默認是 0.4， 範圍[0, 2]，值越大，亮度越低
         outImg = cv.illuminationChange(img, mask=self.int_mask, alpha=alpha, beta=beta)
 
-        # outImg = 255 * np.power(img / 255.0, 1.0 / self.midtonesRate) * (1.0 / (1 - self.brightnessRate))
-
         img = outImg.clip(0, 255)
-        # img[img < 0] = 0
-        # img[img > 255] = 255
-
         img = img.astype(np.uint8)
         return img
 
