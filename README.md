@@ -1,5 +1,5 @@
-# myps
-experimental project: photo style modifier
+# myps：photo style modifier
+
 use main.py to understand how this system works.
 
 ## 图片风格调整
@@ -14,14 +14,20 @@ use main.py to understand how this system works.
 * 动漫奶油风： 滤镜奶杏，对比度25，饱和度20，锐化30，高光-30，色温30
 * ins发光： ABG缤果70，光感-30，对比度30，饱和度20，高光30，色温-30
 
-PIL可以解决的部分：
-* 对比度-contrast
-* 锐化-sharpness
-* 亮度-brightness
-* 饱和度-color
 
-TODO:
-* 高光
-* 色温
-* 色调
-* 阴影
+# 项目总结
+PIL可以解决的部分：
+* 对比度-contrast: 使用内置方法
+* 锐化-sharpness: 使用内置方法
+* 亮度-brightness: 使用内置方法
+* 饱和度-color: 使用内置方法
+* 曝光度（光感）-exposure: 将RGB图片映射到HSV色彩空间，调节V值
+* 色相-hue: 将RGB图片映射到HSV色彩空间，调节H值
+
+OpenCV可以解决的部分:
+* 阴影-shadow: 通过百分比参数计算阈值，对阴影区进行统一增量，对明亮区进行梯度增亮（越亮的地方越倾向于不变化）
+* 高光-highlight: 通过百分比参数计算阈值，利用内置方法梯度调低亮度
+* 色温-color_temperature: 在保持整体图片曝光度不变的情况下，改变蓝色通道和（红，绿）色通道的比例
+* 色调-color_tone:在保持整体图片曝光度不变的情况下，改变绿色通道和（红，蓝）色通道的比例
+
+至此所有基本操作全部实现。具体参数与ps有所不同，需要人为进行调整。
