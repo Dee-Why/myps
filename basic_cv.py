@@ -3,37 +3,39 @@ import sys
 import cv2 as cv
 import numpy as np
 
+
 class PSShadow:
     """
     色阶调整 默认输入图片为opencv风格的np.array
     """
-    def __init__(self, image, parameter=50, threshold_percentile=90):
+
+    def __init__(self, image, parameter=50, threshold_percentile=50):
         self.parameter = parameter
         self.threshold_percentile = threshold_percentile
 
         # 单位化图片
-        img = image.astype(float)/255.0
+        img = image.astype(float) / 255.0
 
         # 取不同通道
         srcR = img[:, :, 2]
         srcG = img[:, :, 1]
         srcB = img[:, :, 0]
-        srcGray = 0.299 * srcR + 0.587 * srcG + 0.114 * srcB
 
         # 计算明度矩阵
-        luminance = (1-srcGray) * (1-srcGray)
+        srcGray = 0.299 * srcR + 0.587 * srcG + 0.114 * srcB
+        shade_score = (1 - srcGray) * (1 - srcGray)
 
-        self.maskThreshold = np.percentile(luminance, self.threshold_percentile)
-        # 将明度小于均值的部分视为阴影区，这里mask里1为明亮区，0为阴影区
-        mask = luminance > self.maskThreshold
+        self.maskThreshold = np.percentile(shade_score, self.threshold_percentile)
+        # 将明度小于均值的部分视为阴影区，这里mask里1为阴影区，0为明亮区
+        mask = shade_score > self.maskThreshold
         imgRow = np.size(img, 0)
         imgCol = np.size(img, 1)
 
         self.rgbMask = np.zeros([imgRow, imgCol, 3], dtype=bool)
         self.rgbMask[:, :, 0] = self.rgbMask[:, :, 1] = self.rgbMask[:, :, 2] = mask
 
-        self.rgbLuminance = np.zeros([imgRow, imgCol, 3], dtype=float)
-        self.rgbLuminance[:, :, 0] = self.rgbLuminance[:, :, 1] = self.rgbLuminance[:, :, 2] = luminance
+        self.rgb_shade_score = np.zeros([imgRow, imgCol, 3], dtype=float)
+        self.rgb_shade_score[:, :, 0] = self.rgb_shade_score[:, :, 1] = self.rgb_shade_score[:, :, 2] = shade_score
 
         self.midtonesRate = np.zeros([imgRow, imgCol, 3], dtype=float)
         self.brightnessRate = np.zeros([imgRow, imgCol, 3], dtype=float)
@@ -41,13 +43,15 @@ class PSShadow:
     def adjust_image(self, img):
         maxRate = 0.25
         midTones = 1 + self.parameter / 100.0
-        brightness = (self.parameter / 100.0) * maxRate
+        brightness = (self.parameter / 100.0 - 0.001) * maxRate
 
-        self.midtonesRate[self.rgbMask] = midTones
-        self.midtonesRate[~self.rgbMask] = (midTones-1.0) / self.maskThreshold * self.rgbLuminance[~self.rgbMask] + 1.0
+        # 阴影区固定增强， 明亮区
+        self.midtonesRate[self.rgbMask] = midTones  # 这个是阴影区
+        self.midtonesRate[~self.rgbMask] = (midTones - 1.0) * self.rgb_shade_score[
+            ~self.rgbMask] / self.maskThreshold + 1.0
 
         self.brightnessRate[self.rgbMask] = brightness
-        self.brightnessRate[~self.rgbMask] = (1 / self.maskThreshold * self.rgbLuminance[~self.rgbMask]) * brightness
+        self.brightnessRate[~self.rgbMask] = (1 * self.rgb_shade_score[~self.rgbMask] / self.maskThreshold) * brightness
 
         outImg = 255 * np.power(img / 255.0, 1.0 / self.midtonesRate) * (1.0 / (1 - self.brightnessRate))
 
@@ -59,8 +63,8 @@ class PSShadow:
         return img
 
 
-def modify_shadow(cvimage, factor, luminance_threshold):
-    psS = PSShadow(cvimage, factor, luminance_threshold)
+def modify_shadow(cvimage, factor, threshold):
+    psS = PSShadow(cvimage, factor, threshold)
     image = psS.adjust_image(cvimage)
     return image
 
@@ -69,33 +73,34 @@ class PSHighlight:
     """
     色阶调整 默认输入图片为opencv风格的np.array
     """
-    def __init__(self, image, parameter=50, threshold_percentile=90):
+
+    def __init__(self, image, parameter=50, threshold_percentile=50):
         self.parameter = parameter
         self.threshold_percentile = threshold_percentile
 
         # 单位化图片
-        img = image.astype(float)/255.0
+        img = image.astype(float) / 255.0
 
         # 取不同通道
         srcR = img[:, :, 2]
         srcG = img[:, :, 1]
         srcB = img[:, :, 0]
-        srcGray = 0.299 * srcR + 0.587 * srcG + 0.114 * srcB
 
         # 计算明度矩阵
-        luminance = (1-srcGray) * (1-srcGray)
+        srcGray = 0.299 * srcR + 0.587 * srcG + 0.114 * srcB
+        shade_score = (1 - srcGray) * (1 - srcGray)
 
-        self.maskThreshold = np.percentile(luminance, self.threshold_percentile)
-        # 将明度小于均值的部分视为阴影区，这里mask里1为明亮区，0为阴影区
-        mask = luminance > self.maskThreshold
+        self.maskThreshold = np.percentile(shade_score, self.threshold_percentile)
+        # 将明度小于均值的部分视为阴影区，这里mask里1为阴影区，0为明亮区
+        mask = shade_score > self.maskThreshold
         imgRow = np.size(img, 0)
         imgCol = np.size(img, 1)
 
         self.rgbMask = np.zeros([imgRow, imgCol, 3], dtype=bool)
         self.rgbMask[:, :, 0] = self.rgbMask[:, :, 1] = self.rgbMask[:, :, 2] = mask
 
-        self.rgbLuminance = np.zeros([imgRow, imgCol, 3], dtype=float)
-        self.rgbLuminance[:, :, 0] = self.rgbLuminance[:, :, 1] = self.rgbLuminance[:, :, 2] = luminance
+        self.rgb_shade_score = np.zeros([imgRow, imgCol, 3], dtype=float)
+        self.rgb_shade_score[:, :, 0] = self.rgb_shade_score[:, :, 1] = self.rgb_shade_score[:, :, 2] = shade_score
 
         self.midtonesRate = np.zeros([imgRow, imgCol, 3], dtype=float)
         self.brightnessRate = np.zeros([imgRow, imgCol, 3], dtype=float)
@@ -103,13 +108,16 @@ class PSHighlight:
     def adjust_image(self, img):
         maxRate = 0.25
         midTones = 1 + self.parameter / 100.0
-        brightness = (self.parameter / 100.0) * maxRate
+        brightness = (self.parameter / 100.0 - 0.001) * maxRate
 
-        self.midtonesRate[~self.rgbMask] = midTones
-        self.midtonesRate[self.rgbMask] = (midTones-1.0) / self.maskThreshold * self.rgbLuminance[self.rgbMask] + 1.0
+        self.midtonesRate[~self.rgbMask] = midTones  # 对于明亮区固定值
+        self.midtonesRate[self.rgbMask] = (midTones - 1.0) * \
+                                          (2 * self.maskThreshold - self.rgb_shade_score[
+                                              self.rgbMask]) / self.maskThreshold + 1.0
 
         self.brightnessRate[~self.rgbMask] = brightness
-        self.brightnessRate[self.rgbMask] = (1 / self.maskThreshold * self.rgbLuminance[self.rgbMask]) * brightness
+        self.brightnessRate[self.rgbMask] = (1 * (2 * self.maskThreshold - self.rgb_shade_score[self.rgbMask])
+                                             / self.maskThreshold) * brightness
 
         outImg = 255 * np.power(img / 255.0, 1.0 / self.midtonesRate) * (1.0 / (1 - self.brightnessRate))
 
@@ -121,10 +129,30 @@ class PSHighlight:
         return img
 
 
-def modify_highlight(cvimage, factor, luminance_threshold):
-    psH = PSHighlight(cvimage, factor, luminance_threshold)
+def modify_highlight(cvimage, factor, threshold):
+    psH = PSHighlight(cvimage, factor, threshold)
     image = psH.adjust_image(cvimage)
     return image
+
+
+def reduce_highlights(img, threshold_percentile=50):
+    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 先轉成灰階處理
+    maskThreshold = np.percentile(img_gray, threshold_percentile)
+    ret, thresh = cv.threshold(img_gray, maskThreshold, 255, 0)  # 利用 threshold 過濾出高光的部分，目前設定高於 200 即為高光
+    contours, hierarchy = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    img_zero = np.zeros(img.shape, dtype=np.uint8)
+
+    for contour in contours:
+        x, y, w, h = cv.boundingRect(contour)
+        img_zero[y:y + h, x:x + w] = 255
+        mask = img_zero
+
+    # alpha，beta 共同決定高光消除後的模糊程度
+    # alpha: 亮度的缩放因子，默認是 0.2， 範圍[0, 2], 值越大，亮度越低
+    # beta:  亮度缩放後加上的参数，默認是 0.4， 範圍[0, 2]，值越大，亮度越低
+    result = cv.illuminationChange(img, mask, alpha=0.2, beta=0.4)
+
+    return result
 
 
 def modify_color_temperature(img, factor):
@@ -185,7 +213,6 @@ def modify_color_tone(img, factor):
     tuned_rgb = np.dstack((imgb, imgg, imgr)).astype(np.uint8)
 
     return tuned_rgb
-
 
 # if __name__ == '__main__':
 #     """
