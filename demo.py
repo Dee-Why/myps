@@ -1,7 +1,7 @@
 from utils import read_image, save_image, pilImage_to_cvarray, cvarray_to_pilImage
 from basic_pil import modify_brightness, modify_contrast, modify_sharpness, modify_saturation
 from basic_pil import modify_hue, modify_exposure
-from basic_cv import modify_shadow, modify_highlight, modify_color_temperature, modify_color_tone
+from basic_cv import lightup_shadow, lower_highlight, modify_color_temperature, modify_color_tone
 
 # 读入图片
 img = read_image("pictures/001/zzy_dark.jpg")
@@ -15,13 +15,13 @@ img = read_image("pictures/001/zzy_dark.jpg")
 # img = modify_sharpness(img, factor=25)
 # 阴影调整（factor正数增量，负数降暗）（luminance_threshold越小则将更大的部分划归为阴影，更小的部分划分为高光）
 cvimg = pilImage_to_cvarray(img)
-cvimg = modify_shadow(cvimg, factor=50, threshold=50)
+cvimg = lightup_shadow(cvimg, factor=50, threshold=50)
 img = cvarray_to_pilImage(cvimg)
 # # 调整整体亮度
 # img = modify_brightness(img, factor=-40)
 # 高光调整（factor正数增量，负数降暗）（luminance_threshold越高则将更大的部分划归为阴影，更小的部分划分为高光）
 cvimg = pilImage_to_cvarray(img)
-cvimg = modify_highlight(cvimg, factor=20, threshold=50)
+cvimg = lower_highlight(cvimg, factor=20, threshold=50)
 img = cvarray_to_pilImage(cvimg)
 # # 调整色温（负蓝正黄）
 # cvimg = pilImage_to_cvarray(img)

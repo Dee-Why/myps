@@ -63,7 +63,7 @@ class PSShadow:
         return img
 
 
-def modify_shadow(cvimage, factor, threshold):
+def lightup_shadow(cvimage, factor, threshold):
     psS = PSShadow(cvimage, factor, threshold)
     image = psS.adjust_image(cvimage)
     return image
@@ -114,7 +114,7 @@ class PSHighlight:
         return img
 
 
-def modify_highlight(cvimage, factor, threshold):
+def lower_highlight(cvimage, factor, threshold):
     psH = PSHighlight(cvimage, factor, threshold)
     image = psH.adjust_image(cvimage)
     return image
