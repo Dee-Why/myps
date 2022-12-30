@@ -1,5 +1,6 @@
 # myps
 experimental project: photo style modifier
+use main.py to understand how this system works.
 
 ## 图片风格调整
 按照短视频网站中 林生手机摄影 进行风格模仿
